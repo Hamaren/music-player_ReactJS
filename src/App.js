@@ -1,23 +1,21 @@
-import logo from './logo.svg';
-import './App.css';
+//import './App.css';
+//import counterChange from './actions/controls'
+import React from 'react';
+import {useSelector, useDispatch} from "react-redux";
+import Player from './components/Player'
 
 function App() {
+  // const counter = useSelector(state => state.controlReducer.counter);
+  // const dispatch = useDispatch();
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Player />
+      {/*<header className="App-header">*/}
+      {/*  <h1>Counter: {counter}</h1>*/}
+      {/*  <button onClick={()=> dispatch(counterChange('INCREMENT'))}>Increment</button>*/}
+      {/*  <button onClick={()=> dispatch(counterChange('DECREMENT'))}>Decrement</button>*/}
+      {/*</header>*/}
     </div>
   );
 }
