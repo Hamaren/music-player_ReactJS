@@ -1,25 +1,21 @@
+import {PLAY, PREV, NEXT} from "../../constants";
+
 export const play = ()=>{
   return {
-    type: 'PLAY'
+    type: PLAY
   }
 };
 
 export const prev = (currentSong)=>{
   return {
-    type: 'PREV',
+    type: PREV,
     payload: currentSong
   }
 };
 
 export const next = (songsLength)=>{
   return {
-    type: 'NEXT',
+    type: NEXT,
     payload: songsLength
-  }
-};
-
-export const stop = ()=>{
-  return {
-    type: 'STOP'
   }
 };

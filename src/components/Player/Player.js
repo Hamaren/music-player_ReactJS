@@ -1,8 +1,10 @@
 import {useSelector, useDispatch} from "react-redux";
-import {play, prev, next} from '../redux/actions/controls';
+import {play, prev, next} from '../../redux/actions/controls';
 import {useState, useEffect, useRef} from 'react';
+import Controls from "../Controls/Controls";
+import './style.scss';
 
-function Player(){
+function Player() {
   const [volume, setVolume] = useState(1);
   const [loop, setLoop] = useState(false);
   const playStatus = useSelector(state => state.control.isPlaying);
@@ -12,76 +14,76 @@ function Player(){
   const dispatch = useDispatch();
   const audioEl = useRef(null);
 
-  const playEnd = ()=> {
-    if(loop){
+  const playEnd = () => {
+    if (loop) {
       audioEl.current.currentTime = 0;
       audioEl.current.play();
       return
     }
-    if(currentSongIndex < songsLength - 1){
+    if (currentSongIndex < songsLength - 1) {
       dispatch(next(songsLength));
-    } else{
+    } else {
       dispatch(play());
       dispatch(next(songsLength));
     }
   };
 
-  const loopHandler = ()=>{
+  const loopHandler = () => {
     setLoop(!loop);
   };
 
-  const volumeHandler = (value)=>{
-    setVolume(prev =>{
-      if(value){
-        if(prev + 0.11 > 1){
+  const volumeHandler = (value) => {
+    setVolume(prev => {
+      if (value) {
+        if (prev + 0.11 > 1) {
           return 1;
         } else return prev + 0.11;
-      } else{
-        if(prev - 0.11 < 0){
+      } else {
+        if (prev - 0.11 < 0) {
           return 0;
         } else return prev - 0.11;
       }
     });
   };
 
-  useEffect(() =>{
+  useEffect(() => {
     audioEl.current.volume = volume;
   }, [volume]);
 
-  useEffect(() =>{
-    if(playStatus){
+  useEffect(() => {
+    if (playStatus) {
       audioEl.current.play();
-
-    } else{
+    } else {
       audioEl.current.pause();
     }
   }, [playStatus, currentSongIndex]);
 
-  useEffect(()=>{
-    audioEl.current.addEventListener('ended', playEnd);
+  useEffect(() => {
+    const audio = audioEl.current;
 
-    return ()=>{
-      audioEl.current.removeEventListener('ended', playEnd);
+    audio.addEventListener('ended', playEnd);
+    return () => {
+      audio.removeEventListener('ended', playEnd);
     }
   });
 
-  return(
+  return (
     <div className="player">
       <audio ref={audioEl} src={currentSong}></audio>
       <h1>{volume}</h1>
       <div className="preference">
         <label>Loop</label>
-        <input type="checkbox" onChange={()=>loopHandler()} />
+        <input type="checkbox" onChange={() => loopHandler()}/>
       </div>
       <div>
-        <button onClick={()=> volumeHandler()}>-</button>
-        <button onClick={()=> volumeHandler(true)}>+</button>
+        <button onClick={() => volumeHandler()}>-</button>
+        <button onClick={() => volumeHandler(true)}>+</button>
       </div>
-      <div>
-        <button onClick={()=> dispatch(prev(songsLength))}>Prev</button>
-        <button onClick={()=> dispatch(play())}>Play</button>
-        <button onClick={()=> dispatch(next(songsLength))}>Next</button>
-      </div>
+      <Controls
+        prev={() => dispatch(prev(songsLength))}
+        play={() => dispatch(play())}
+        next={() => dispatch(next(songsLength))}
+      />
     </div>
   )
 }
