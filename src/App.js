@@ -1,9 +1,10 @@
 import React from 'react';
-import Player from './components/Player/Player'
+import Player from './components/Player/Player';
+import './style.scss';
 
 function App() {
   return (
-    <div className="App">
+    <div className="app">
       <Player />
     </div>
   );
