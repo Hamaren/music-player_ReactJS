@@ -1,7 +1,7 @@
 import {getTimeTrack} from '../../functions';
-import {useSelector, useDispatch} from 'react-redux';
-import {play, prev, next} from '../../redux/actions/controls';
 import {useState, useEffect, useRef} from 'react';
+import {useSelector, useDispatch} from 'react-redux';
+import {play, prev, next, jump} from '../../redux/actions/controls';
 import Controls from "../Controls/Controls";
 import './style.scss';
 
@@ -23,7 +23,15 @@ function Player() {
   const dispatch = useDispatch();
 
   //Event functions
-  const metaLoaded = ()=>{
+  const getRandomSong = (index, maxIndex) => {
+    let randomIndex = index;
+    while(randomIndex === index){
+      randomIndex = Math.floor(Math.random() * maxIndex);
+    }
+    return randomIndex
+  };
+
+  const metaLoaded = () => {
     setTrackDuration(audioEl.current.duration);
     setProgressStep(trackDuration / 100);
   };
@@ -33,6 +41,10 @@ function Player() {
       audioEl.current.currentTime = 0;
       audioEl.current.play();
       return
+    }
+    if (shuffle) {
+      dispatch(jump(getRandomSong(currentSongIndex, songsLength)));
+      return;
     }
     if (currentSongIndex < songsLength - 1) {
       dispatch(next(songsLength));
@@ -46,60 +58,54 @@ function Player() {
   };
 
   //Handlers
-  const volumeHandler = (e)=>{
+  const loopHandler = ()=>{
+    setLoop(!loop);
+  };
+  const shuffleHandler = ()=>{
+    setShuffle(!shuffle);
+  };
+  const volumeHandler = (e) => {
     setVolume(e.target.value / 100);
   };
-  const progressHandler = (e) =>{
+  const progressHandler = (e) => {
     setProgress(e.target.value);
   };
 
-  // const forwardHandler = (e)=>{
-  //   metaLoaded();
-  //   if(progress >= trackDuration){
-  //     setProgress(0)
-  //   } else{
-  //     setProgress(progress + 1)
-  //   }
-  //   console.log(progress);
-  //   //console.log(progressStep);
-  //
-  // };
-
   //Effects
-  useEffect(()=>{
+  useEffect(() => {
     const audio = audioEl.current;
     audio.addEventListener('loadedmetadata', metaLoaded);
-    return ()=>{
+    return () => {
       audio.removeEventListener('loadedmetadata', metaLoaded);
     }
   }, [currentSongIndex]);
 
-  useEffect(()=>{
-    if(isPlaying){
-      const interval = setInterval(()=>{
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
         progressBar.current.value = audioEl.current.currentTime;
       }, 1000);
-      return ()=>{
+      return () => {
         clearInterval(interval);
       }
     }
   }, [isPlaying, currentSongIndex]);
 
-  useEffect(()=>{
+  useEffect(() => {
     audioEl.current.currentTime = progress;
   }, [progress]);
 
-  useEffect(()=>{
-    if(isPlaying){
-      const interval = setInterval(()=>{
-        if(timeLast){
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
+        if (timeLast) {
           setCurrentTime(getTimeTrack(trackDuration - audioEl.current.currentTime))
-        } else{
+        } else {
           setCurrentTime(getTimeTrack(audioEl.current.currentTime));
         }
       }, 1000);
 
-      return ()=> {
+      return () => {
         clearInterval(interval);
       };
     }
@@ -127,32 +133,39 @@ function Player() {
 
   return (
     <div className="player">
-      <audio ref={audioEl} src={currentSong} />
+      <audio ref={audioEl} src={currentSong.src}/>
       <div className="player__first-line">
         <div className="track-counter">{currentTime}</div>
         <div className="volume-changer">
           <label htmlFor="volume">Volume</label>
           <input type="range" id="volume" name="volume"
-                 min="0" max="100" defaultValue={volume * 100} onChange={(e)=>{volumeHandler(e)}} />
+                 min="0" max="100" defaultValue={volume * 100} onChange={(e) => {
+            volumeHandler(e)
+          }}/>
         </div>
       </div>
       <div className="settings">
         <div className="settings__wrapper">
-          <input id="loop" className="ios-switch" defaultChecked={loop} type="checkbox" onChange={()=>setLoop(!loop)}/>
-          <label htmlFor="loop">Loop</label>
-        </div>
-        <div className="settings__wrapper">
-          <input id="time-left" className="ios-switch" defaultChecked={timeLast} type="checkbox" onChange={() => setTimeLast(!timeLast)}/>
+          <input id="time-left" className="ios-switch" defaultChecked={timeLast} type="checkbox"
+                 onChange={() => setTimeLast(!timeLast)}/>
           <label htmlFor="time-left">Time left</label>
         </div>
         <div className="settings__wrapper">
-          <input id="shuffle" className="ios-switch" defaultChecked={shuffle} type="checkbox" onChange={() => setShuffle(!shuffle)}/>
-          <label htmlFor="track-time-left">Shuffle</label>
+          <input id="loop" className="ios-switch" checked={loop} type="checkbox"
+                 onChange={() => loopHandler()}/>
+          <label htmlFor="loop">Loop</label>
+        </div>
+        <div className="settings__wrapper">
+          <input id="shuffle" className="ios-switch" checked={shuffle} type="checkbox"
+                 onChange={() => shuffleHandler()}/>
+          <label htmlFor="shuffle">Shuffle</label>
         </div>
       </div>
       <div className="track-progress">
         <input ref={progressBar} type="range" id="track-progress" name="track-progress"
-               min="0" max={Math.ceil(trackDuration)} step={progressStep} onChange={(e)=>{progressHandler(e)}} />
+               min="0" max={Math.ceil(trackDuration)} step={progressStep} onChange={(e) => {
+          progressHandler(e)
+        }}/>
       </div>
       <Controls
         prev={() => dispatch(prev(songsLength))}

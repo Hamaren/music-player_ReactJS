@@ -1,4 +1,4 @@
-import {PLAY, PREV, NEXT} from "../../constants";
+import {PLAY, PREV, NEXT, JUMP} from "../../constants";
 
 const initialState = {
   isPlaying : false,
@@ -10,7 +10,6 @@ function control(state = initialState, action) {
     return {
       ...state,
       isPlaying: !state.isPlaying,
-      isStopped: false,
     }
   }
   if(action.type === PREV){
@@ -36,6 +35,14 @@ function control(state = initialState, action) {
       return {
         ...state,
         currentSongIndex: state.currentSongIndex + 1
+      }
+    }
+  }
+  if(action.type === JUMP){
+    if(state.currentSongIndex !== action.payload) {
+      return {
+        ...state,
+        currentSongIndex: action.payload,
       }
     }
   }
